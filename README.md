@@ -13,6 +13,3 @@ Java-приложение для парсинга git-лога.
 Если параметр regex не указан, всё будет передано в поле text)
 3) --format (-f)
 (json, html или plain. По умолчанию: plain)
-
-#### Пример запуска приложения:
-java -jar GitCommitsParser-1.0.jar --gitLogFile=/home/user/Desktop/gitLog -f json -r='(?<commitId>^\w+)\s(?<text>.+)'
