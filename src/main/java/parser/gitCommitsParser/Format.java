@@ -3,27 +3,15 @@ package parser.gitCommitsParser;
 import org.json.simple.JSONObject;
 
 import java.util.List;
+import java.util.Map;
 
 public class Format {
-    public static String toPlain(List<String[]> splitCommits) {
-
+    public static String toPlain(List<Map<String, String>> splitCommits) {
         StringBuilder result = new StringBuilder();
 
-        for (String[] listOfParts : splitCommits) {
-            if (listOfParts[Component.commitIdIndex] != null) {
-                result.append(Component.commitId + ": ").append(listOfParts[Component.commitIdIndex]).append("\n");
-            }
-            if (listOfParts[Component.typeIndex] != null) {
-                result.append(Component.type + ": ").append(listOfParts[Component.typeIndex]).append("\n");
-            }
-            if (listOfParts[Component.jiraIssueIndex] != null) {
-                result.append(Component.jiraIssue + ": ").append(listOfParts[Component.jiraIssueIndex]).append("\n");
-            }
-            if (listOfParts[Component.programComponentIndex] != null) {
-                result.append(Component.programComponent + ": ").append(listOfParts[Component.programComponentIndex]).append("\n");
-            }
-            if (listOfParts[Component.textIndex] != null) {
-                result.append(Component.text + ": ").append(listOfParts[Component.textIndex]).append("\n");
+        for (Map<String, String> listOfParts : splitCommits) {
+            for (String component : listOfParts.keySet()) {
+                result.append(component).append(": ").append(listOfParts.get(component)).append("\n");
             }
 
             result.append("\n");
@@ -32,30 +20,14 @@ public class Format {
         return result.toString();
     }
 
-    public static String toHTML(List<String[]> splitCommits) {
+    public static String toHTML(List<Map<String, String>> splitCommits) {
         StringBuilder result = new StringBuilder();
 
         result.append("<body>" + "\n");
 
-        for (String[] listOfParts : splitCommits) {
-            if (listOfParts[Component.commitIdIndex] != null) {
-                result.append("\t<h1>" + Component.commitId + ": ")
-                        .append(listOfParts[Component.commitIdIndex]).append("</h1>").append("\n");
-            }
-            if (listOfParts[Component.typeIndex] != null) {
-                result.append("\t<h2>" + Component.type + ": ")
-                        .append(listOfParts[Component.typeIndex]).append("</h2>").append("\n");
-            }
-            if (listOfParts[Component.jiraIssueIndex] != null) {
-                result.append("\t<h2>" + Component.jiraIssue + ": ")
-                        .append(listOfParts[Component.jiraIssueIndex]).append("</h2>").append("\n");
-            }
-            if (listOfParts[Component.programComponentIndex] != null) {
-                result.append("\t<h2>" + Component.programComponent + ": ")
-                        .append(listOfParts[Component.programComponentIndex]).append("</h2>").append("\n");
-            }
-            if (listOfParts[Component.textIndex] != null) {
-                result.append("\t<h2>" + Component.text +  ": ").append(listOfParts[Component.textIndex]).append("</h2>").append("\n");
+        for (Map<String, String> listOfParts : splitCommits) {
+            for (String component : listOfParts.keySet()) {
+                result.append("\t<h2>").append(component).append(": ").append(listOfParts.get(component)).append("</h2>\n");
             }
 
             result.append("\n");
@@ -66,31 +38,17 @@ public class Format {
         return result.toString();
     }
 
-    public static String toJSON(List<String[]> splitCommits) {
-        JSONObject jsonResult = new JSONObject();
+    public static String toJSON(List<Map<String, String>> splitCommits) {
+        JSONObject jsonCommits = new JSONObject();
 
         for (int i = 0; i < splitCommits.size(); i++) {
-            JSONObject jsonObject = new JSONObject();
+            JSONObject commit = new JSONObject();
 
-            if (splitCommits.get(i)[Component.commitIdIndex] != null) {
-                jsonObject.put(Component.commitId, splitCommits.get(i)[Component.commitIdIndex]);
-            }
-            if (splitCommits.get(i)[Component.typeIndex] != null) {
-                jsonObject.put(Component.type, splitCommits.get(i)[Component.typeIndex]);
-            }
-            if (splitCommits.get(i)[Component.jiraIssueIndex] != null) {
-                jsonObject.put(Component.jiraIssue, splitCommits.get(i)[Component.jiraIssueIndex]);
-            }
-            if (splitCommits.get(i)[Component.programComponentIndex] != null) {
-                jsonObject.put(Component.programComponent, splitCommits.get(i)[Component.programComponentIndex]);
-            }
-            if (splitCommits.get(i)[Component.textIndex] != null) {
-                jsonObject.put(Component.text, splitCommits.get(i)[Component.textIndex]);
-            }
+            commit.putAll(splitCommits.get(i));
 
-            jsonResult.put(i + 1, jsonObject);
+            jsonCommits.put(i + 1, commit);
         }
 
-        return jsonResult.toJSONString();
+        return jsonCommits.toJSONString();
     }
 }

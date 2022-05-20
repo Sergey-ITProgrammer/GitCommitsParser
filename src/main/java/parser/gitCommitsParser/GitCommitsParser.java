@@ -6,9 +6,14 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class GitCommitsParser {
     private static final Logger logger = LoggerFactory.getLogger(GitCommitsParser.class);
@@ -24,78 +29,61 @@ public class GitCommitsParser {
     }
 
     public void parse() {
-        List<String> listOfCommits = getListOfCommitsFromFile(gitLogFile);
+        List<String> listOfCommits = getStringOfCommitsFromFile(gitLogFile);
 
-        List<String[]> splitCommits = splitCommitsIntoParts(listOfCommits);
+        List<Map<String, String>> splitCommits = splitCommitsIntoParts(listOfCommits);
 
         String result = "";
 
-        if (format.equals("json")) {
-            logger.info("Converting to JSON");
-
-            result = Format.toJSON(splitCommits);
+        switch (format) {
+            case "json":
+                result = Format.toJSON(splitCommits);
+                break;
+            case "html":
+                result = Format.toHTML(splitCommits);
+                break;
+            default:
+                result = Format.toPlain(splitCommits);
         }
-        if (format.equals("html")) {
-            logger.info("Converting to HTML");
-
-            result = Format.toHTML(splitCommits);
-        }
-        if (format.equals("plain")) {
-            logger.info("Converting to plain");
-
-            result = Format.toPlain(splitCommits);
-        }
-
-        logger.info("The converting was completed successfully");
 
         System.out.println(result);
     }
 
-    private List<String[]> splitCommitsIntoParts(List<String> listOfCommits) {
-        List<String[]> listOfSplitCommits = new ArrayList<>();
+    private List<Map<String, String>> splitCommitsIntoParts(List<String> listOfCommits) {
+        Pattern patternOfGroupName = Pattern.compile("<\\w+>");
 
-        Pattern pattern = Pattern.compile(regex);
+        List<String> listOfGroupName = patternOfGroupName.matcher(regex)
+                .results().map(MatchResult::group).map(s -> s.substring(1, s.length() - 1))
+                .collect(Collectors.toList());
 
-        logger.info("Processing list of commits");
+        Pattern patternOfCommit = Pattern.compile(regex);
+
+        List<Map<String, String>> listOfCommitMap = new ArrayList<>();
 
         for (String commit : listOfCommits) {
-            String[] listOfCommitParts = new String[5];
+            Matcher matcherOfCommit = patternOfCommit.matcher(commit);
 
-            Matcher matcher = pattern.matcher(commit);
+            Map<String, String> commitMap = new HashMap<>();
 
-            if (matcher.find()) {
-                if (regex.contains(String.format("<%s>", Component.commitId))) {
-                    listOfCommitParts[Component.commitIdIndex] = matcher.group(Component.commitId);
+            if (matcherOfCommit.find()) {
+                for (int i = 1; i <= matcherOfCommit.groupCount(); i++) {
+                    commitMap.put(listOfGroupName.get(i - 1), matcherOfCommit.group(i));
                 }
-                if (regex.contains(String.format("<%s>", Component.type))) {
-                    listOfCommitParts[Component.typeIndex] = matcher.group(Component.type);
-                }
-                if (regex.contains(String.format("<%s>", Component.jiraIssue))) {
-                    listOfCommitParts[Component.jiraIssueIndex] = matcher.group(Component.jiraIssue);
-                }
-                if (regex.contains(String.format("<%s>", Component.programComponent))) {
-                    listOfCommitParts[Component.programComponentIndex] = matcher.group(Component.programComponent);
-                }
-                if (regex.contains(String.format("<%s>", Component.text))) {
-                    listOfCommitParts[Component.textIndex] = matcher.group(Component.text);
-                }
-
-                listOfSplitCommits.add(listOfCommitParts);
             }
+
+            listOfCommitMap.add(commitMap);
         }
 
-        return listOfSplitCommits;
+        return listOfCommitMap;
     }
 
-    private List<String> getListOfCommitsFromFile(String pathToCommitFile) {
+    private List<String> getStringOfCommitsFromFile(String pathToCommitFile) {
         List<String> listOfCommits = new ArrayList<>();
 
         try {
-            logger.info("Scanning file on the " + pathToCommitFile + " path");
-
-            listOfCommits = Files.readAllLines(Paths.get(pathToCommitFile));
+            listOfCommits = Files.readAllLines(Paths.get(gitLogFile));
         } catch (IOException e) {
-            logger.warn("The file on the " + pathToCommitFile + " path was not found", e);
+            logger.error("The file on the " + pathToCommitFile + " path was not found", e);
         }
 
         return listOfCommits;
