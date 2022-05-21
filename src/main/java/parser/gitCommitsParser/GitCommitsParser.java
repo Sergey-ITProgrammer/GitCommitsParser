@@ -10,10 +10,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class GitCommitsParser {
     private static final Logger logger = LoggerFactory.getLogger(GitCommitsParser.class);
@@ -46,28 +44,46 @@ public class GitCommitsParser {
                 result = Format.toPlain(splitCommits);
         }
 
+        logger.info("The converting was completed successfully");
+
         System.out.println(result);
     }
 
     private List<Map<String, String>> splitCommitsIntoParts(List<String> listOfCommits) {
-        Pattern patternOfGroupName = Pattern.compile("<\\w+>");
+        Map<String, String> mapOfGroupNameAndRegex = new HashMap<>();
 
-        List<String> listOfGroupName = patternOfGroupName.matcher(regex)
-                .results().map(MatchResult::group).map(s -> s.substring(1, s.length() - 1))
-                .collect(Collectors.toList());
+        Pattern patternOfGroupName = Pattern.compile("\\(\\?<([a-zA-Z][a-zA-Z\\d]*)>");
 
-        Pattern patternOfCommit = Pattern.compile(regex);
+        Matcher matcherOfGroupName = patternOfGroupName.matcher(regex);
+
+        List<Integer> listOfStartAndEndIndexes = new ArrayList<>();
+
+        matcherOfGroupName.results().forEach(matchResult -> {
+            listOfStartAndEndIndexes.add(matchResult.start());
+            listOfStartAndEndIndexes.add(matchResult.end());
+        });
+
+        for (int i = 0; i < listOfStartAndEndIndexes.size() - 2; i += 2) {
+            mapOfGroupNameAndRegex.put(
+                    regex.substring(listOfStartAndEndIndexes.get(i) + 3, listOfStartAndEndIndexes.get(i+1) - 1),
+                    regex.substring(listOfStartAndEndIndexes.get(i+1), listOfStartAndEndIndexes.get(i+2) - 1)
+            );
+        }
+        mapOfGroupNameAndRegex.put(
+                regex.substring(listOfStartAndEndIndexes.get(listOfStartAndEndIndexes.size() - 2) + 3, listOfStartAndEndIndexes.get(listOfStartAndEndIndexes.size() - 1) - 1),
+                regex.substring(listOfStartAndEndIndexes.get(listOfStartAndEndIndexes.size() - 1), regex.length() - 1)
+        );
 
         List<Map<String, String>> listOfCommitMap = new ArrayList<>();
 
         for (String commit : listOfCommits) {
-            Matcher matcherOfCommit = patternOfCommit.matcher(commit);
-
             Map<String, String> commitMap = new HashMap<>();
 
-            if (matcherOfCommit.find()) {
-                for (int i = 1; i <= matcherOfCommit.groupCount(); i++) {
-                    commitMap.put(listOfGroupName.get(i - 1), matcherOfCommit.group(i));
+            for (String element : mapOfGroupNameAndRegex.keySet()) {
+                Matcher matcherOfElement = Pattern.compile(mapOfGroupNameAndRegex.get(element)).matcher(commit);
+
+                if (matcherOfElement.find()) {
+                    commitMap.put(element, matcherOfElement.group());
                 }
             }
 
@@ -84,6 +100,8 @@ public class GitCommitsParser {
             listOfCommits = Files.readAllLines(Paths.get(gitLogFile));
         } catch (IOException e) {
             logger.error("The file on the " + pathToCommitFile + " path was not found", e);
+
+            System.exit(1);
         }
 
         return listOfCommits;
