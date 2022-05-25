@@ -7,9 +7,8 @@
     </appender>
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>./logFromGitCommitsParser.txt</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>./log-%d{yyyy-MM-dd}.%i.txt</fileNamePattern>
+            <fileNamePattern>./logFromGitCommitsParser-%d{yyyy-MM-dd}.%i.txt</fileNamePattern>
 
             <maxFileSize>30MB</maxFileSize>
         </rollingPolicy>

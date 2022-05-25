@@ -2,6 +2,10 @@ package parser.gitCommitsParser;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import parser.gitCommitsParser.converter.Converter;
+import parser.gitCommitsParser.converter.HTMLConverter;
+import parser.gitCommitsParser.converter.JSONConverter;
+import parser.gitCommitsParser.converter.PlainConverter;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -33,15 +37,22 @@ public class GitCommitsParser {
 
         String result = "";
 
+        Converter formatConverter;
         switch (format) {
             case "json":
-                result = Format.toJSON(splitCommits);
+                formatConverter = new JSONConverter();
+
+                result = formatConverter.convert(splitCommits);
                 break;
             case "html":
-                result = Format.toHTML(splitCommits);
+                formatConverter = new HTMLConverter();
+
+                result = formatConverter.convert(splitCommits);
                 break;
             default:
-                result = Format.toPlain(splitCommits);
+                formatConverter = new PlainConverter();
+
+                result = formatConverter.convert(splitCommits);
         }
 
         logger.info("The converting was completed successfully");
