@@ -13,16 +13,19 @@ public class Main {
         Option gitLogFileOption = new Option("l", "gitLogFile", true, "git log file");
         Option regexOption = new Option("r", "regex", true, "regex");
         Option formatOption = new Option("f", "format", true, "format");
+        Option HTMLTemplatePathOption = new Option("h", "htmlTemplate", true, "HTML template path");
 
         String gitLogFile = "";
         String regex = gitLogFileOption.getValue("(?<text>.+)");
         String format = "";
+        String HTMLTemplatePath = "";
 
         Options options = new Options();
 
         options.addOption(gitLogFileOption);
         options.addOption(regexOption);
         options.addOption(formatOption);
+        options.addOption(HTMLTemplatePathOption);
 
         CommandLineParser parser = new DefaultParser();
 
@@ -35,13 +38,13 @@ public class Main {
             System.exit(1);
         }
 
-//        if (!commandLine.hasOption("l") && !commandLine.hasOption("r")) {
-//            for (Option option : options.getOptions()) {
-//                System.out.println(option.getOpt() + " " + option.getLongOpt() + ": " + option.getDescription());
-//            }
-//
-//            System.exit(0);
-//        }
+        if (!commandLine.hasOption("l") && !commandLine.hasOption("r")) {
+            for (Option option : options.getOptions()) {
+                System.out.println(option.getOpt() + " " + option.getLongOpt() + ": " + option.getDescription());
+            }
+
+            System.exit(0);
+        }
 
         if (commandLine.hasOption("l")) {
             gitLogFile = commandLine.getOptionValue(gitLogFileOption);
@@ -51,6 +54,9 @@ public class Main {
         }
         if (commandLine.hasOption("f")) {
             format = commandLine.getOptionValue(formatOption);
+        }
+        if (commandLine.hasOption("h")) {
+            HTMLTemplatePath = commandLine.getOptionValue(HTMLTemplatePathOption);
         }
 
         Format formatEnum;
@@ -66,7 +72,7 @@ public class Main {
         }
 
         try {
-            new GitCommitsParser("/home/sergey/Desktop/gitLogTest", regex, Format.html).parse();
+            new GitCommitsParser(gitLogFile, regex, formatEnum, HTMLTemplatePath).parse();
         } catch (IOException e) {
             logger.error("The file on the " + gitLogFile + " path was not found", e);
 

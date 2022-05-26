@@ -4,6 +4,11 @@ import java.util.List;
 import java.util.Map;
 
 public class ConverterFactory {
+    private final String HTMLTemplatePath;
+
+    public ConverterFactory(String HTMLTemplatePath) {
+        this.HTMLTemplatePath = HTMLTemplatePath;
+    }
     public String convert(List<Map<String, String>> splitCommits, Format format) {
         String result = "";
 
@@ -15,7 +20,7 @@ public class ConverterFactory {
                 result = formatConverter.convert(splitCommits);
                 break;
             case html:
-                formatConverter = new HTMLConverter();
+                formatConverter = new HTMLConverter(HTMLTemplatePath);
 
                 result = formatConverter.convert(splitCommits);
                 break;

@@ -21,11 +21,13 @@ public class GitCommitsParser {
     private final String gitLogFile;
     private final String regex;
     private final Format format;
+    private final String HTMLTemplatePath;
 
-    public GitCommitsParser(String gitLogFile, String regex, Format format) {
+    public GitCommitsParser(String gitLogFile, String regex, Format format, String HTMLTemplatePath) {
         this.gitLogFile = gitLogFile;
         this.regex = regex;
         this.format = format;
+        this.HTMLTemplatePath = HTMLTemplatePath;
     }
 
     public void parse() throws IOException {
@@ -33,7 +35,7 @@ public class GitCommitsParser {
 
         List<Map<String, String>> splitCommits = splitCommitsIntoParts(listOfCommits);
 
-        ConverterFactory converter = new ConverterFactory();
+        ConverterFactory converter = new ConverterFactory(HTMLTemplatePath);
 
         String result = converter.convert(splitCommits, format);
 

@@ -6,7 +6,9 @@
 </head>
 <body>
     <ul th:each="commit: ${commits}">
-        <li th:text="${commit}"></li>
+        <li th:each="key: ${commit.keySet()}">
+            <th:block th:text="${key} + ': ' + ${commit.get(key)}"></th:block>
+        </li>
     </ul>
 </body>
 </html>
