@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>parsedGitCommits</title>
+</head>
+<body>
+    <ul th:each="commit: ${commits}">
+        <li th:text="${commit}"></li>
+    </ul>
+</body>
+</html>

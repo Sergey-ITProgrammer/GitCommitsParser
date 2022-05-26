@@ -2,10 +2,8 @@ package parser.gitCommitsParser;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import parser.gitCommitsParser.converter.Converter;
-import parser.gitCommitsParser.converter.HTMLConverter;
-import parser.gitCommitsParser.converter.JSONConverter;
-import parser.gitCommitsParser.converter.PlainConverter;
+import parser.gitCommitsParser.converter.ConverterFactory;
+import parser.gitCommitsParser.converter.Format;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -22,38 +20,22 @@ public class GitCommitsParser {
 
     private final String gitLogFile;
     private final String regex;
-    private final String format;
+    private final Format format;
 
-    public GitCommitsParser(String gitLogFile, String regex, String format) {
+    public GitCommitsParser(String gitLogFile, String regex, Format format) {
         this.gitLogFile = gitLogFile;
         this.regex = regex;
         this.format = format;
     }
 
-    public void parse() {
-        List<String> listOfCommits = getStringOfCommitsFromFile(gitLogFile);
+    public void parse() throws IOException {
+        List<String> listOfCommits = getStringOfCommitsFromFile();
 
         List<Map<String, String>> splitCommits = splitCommitsIntoParts(listOfCommits);
 
-        String result = "";
+        ConverterFactory converter = new ConverterFactory();
 
-        Converter formatConverter;
-        switch (format) {
-            case "json":
-                formatConverter = new JSONConverter();
-
-                result = formatConverter.convert(splitCommits);
-                break;
-            case "html":
-                formatConverter = new HTMLConverter();
-
-                result = formatConverter.convert(splitCommits);
-                break;
-            default:
-                formatConverter = new PlainConverter();
-
-                result = formatConverter.convert(splitCommits);
-        }
+        String result = converter.convert(splitCommits, format);
 
         logger.info("The converting was completed successfully");
 
@@ -76,8 +58,8 @@ public class GitCommitsParser {
 
         for (int i = 0; i < listOfStartAndEndIndexes.size() - 2; i += 2) {
             mapOfGroupNameAndRegex.put(
-                    regex.substring(listOfStartAndEndIndexes.get(i) + 3, listOfStartAndEndIndexes.get(i+1) - 1),
-                    regex.substring(listOfStartAndEndIndexes.get(i+1), listOfStartAndEndIndexes.get(i+2) - 1)
+                    regex.substring(listOfStartAndEndIndexes.get(i) + 3, listOfStartAndEndIndexes.get(i + 1) - 1),
+                    regex.substring(listOfStartAndEndIndexes.get(i + 1), listOfStartAndEndIndexes.get(i + 2) - 1)
             );
         }
         mapOfGroupNameAndRegex.put(
@@ -104,17 +86,7 @@ public class GitCommitsParser {
         return listOfCommitMap;
     }
 
-    private List<String> getStringOfCommitsFromFile(String pathToCommitFile) {
-        List<String> listOfCommits = new ArrayList<>();
-
-        try {
-            listOfCommits = Files.readAllLines(Paths.get(gitLogFile));
-        } catch (IOException e) {
-            logger.error("The file on the " + pathToCommitFile + " path was not found", e);
-
-            System.exit(1);
-        }
-
-        return listOfCommits;
+    private List<String> getStringOfCommitsFromFile() throws IOException {
+        return Files.readAllLines(Paths.get(gitLogFile));
     }
 }

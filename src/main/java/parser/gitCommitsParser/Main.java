@@ -3,23 +3,25 @@ package parser.gitCommitsParser;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import parser.gitCommitsParser.converter.Format;
+
+import java.io.IOException;
 
 public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
     public static void main (String[] args) {
+        Option gitLogFileOption = new Option("l", "gitLogFile", true, "git log file");
+        Option regexOption = new Option("r", "regex", true, "regex");
+        Option formatOption = new Option("f", "format", true, "format");
 
         String gitLogFile = "";
-        String regex = "(?<text>.+)";
+        String regex = gitLogFileOption.getValue("(?<text>.+)");
         String format = "";
-
-        Option gitLogFileOption = new Option("l", "gitLogFile", true, "git log file");
-        Option patternOption = new Option("r", "regex", true, "regex");
-        Option formatOption = new Option("f", "format", true, "format");
 
         Options options = new Options();
 
         options.addOption(gitLogFileOption);
-        options.addOption(patternOption);
+        options.addOption(regexOption);
         options.addOption(formatOption);
 
         CommandLineParser parser = new DefaultParser();
@@ -33,23 +35,42 @@ public class Main {
             System.exit(1);
         }
 
-        if (!commandLine.hasOption("l") && !commandLine.hasOption("r")) {
-            System.out.println("-l --gitLogFile: path to git log file\n" +
-                                "-r --regex: regex to parse commits\n" +
-                                "-f --format: format to parse commits");
-            System.exit(1);
-        }
+//        if (!commandLine.hasOption("l") && !commandLine.hasOption("r")) {
+//            for (Option option : options.getOptions()) {
+//                System.out.println(option.getOpt() + " " + option.getLongOpt() + ": " + option.getDescription());
+//            }
+//
+//            System.exit(0);
+//        }
 
         if (commandLine.hasOption("l")) {
             gitLogFile = commandLine.getOptionValue(gitLogFileOption);
         }
         if (commandLine.hasOption("r")) {
-            regex = commandLine.getOptionValue(patternOption);
+            regex = commandLine.getOptionValue(regexOption);
         }
         if (commandLine.hasOption("f")) {
             format = commandLine.getOptionValue(formatOption);
         }
 
-        new GitCommitsParser(gitLogFile, regex, format).parse();
+        Format formatEnum;
+        switch (format) {
+            case "json":
+                formatEnum = Format.json;
+                break;
+            case "html":
+                formatEnum = Format.html;
+                break;
+            default:
+                formatEnum = Format.plain;
+        }
+
+        try {
+            new GitCommitsParser("/home/sergey/Desktop/gitLogTest", regex, Format.html).parse();
+        } catch (IOException e) {
+            logger.error("The file on the " + gitLogFile + " path was not found", e);
+
+            System.exit(2);
+        }
     }
 }

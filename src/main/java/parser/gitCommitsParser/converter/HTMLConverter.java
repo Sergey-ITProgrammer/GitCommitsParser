@@ -1,25 +1,29 @@
 package parser.gitCommitsParser.converter;
 
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.templatemode.TemplateMode;
+import org.thymeleaf.templateresolver.FileTemplateResolver;
+
 import java.util.List;
 import java.util.Map;
 
 public class HTMLConverter implements Converter {
     @Override
     public String convert(List<Map<String, String>> splitCommits) {
-        StringBuilder result = new StringBuilder();
+        FileTemplateResolver templateResolver = new FileTemplateResolver();
 
-        result.append("<body>" + "\n");
+        templateResolver.setTemplateMode(TemplateMode.HTML);
+        templateResolver.setPrefix("/home/sergey/Desktop/JavaProjects/GitCommitsParser/src/main/resources/");
 
-        for (Map<String, String> listOfParts : splitCommits) {
-            for (String component : listOfParts.keySet()) {
-                result.append("\t<h2>").append(component).append(": ").append(listOfParts.get(component)).append("</h2>\n");
-            }
+        TemplateEngine templateEngine = new TemplateEngine();
 
-            result.append("\n");
-        }
+        templateEngine.setTemplateResolver(templateResolver);
 
-        result.append("</body>");
+        Context context = new Context();
 
-        return result.toString();
+        context.setVariable("commits", splitCommits);
+
+        return templateEngine.process("defaultHTMLTemplate.html", context);
     }
 }
