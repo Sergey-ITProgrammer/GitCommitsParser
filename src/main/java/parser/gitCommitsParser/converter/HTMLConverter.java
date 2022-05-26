@@ -10,7 +10,6 @@ import org.thymeleaf.templateresolver.FileTemplateResolver;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class HTMLConverter implements Converter {
     private static final Logger logger = LoggerFactory.getLogger(HTMLConverter.class);
@@ -31,8 +30,10 @@ public class HTMLConverter implements Converter {
         templateEngine.setTemplateResolver(templateResolver);
 
         try {
-            return templateEngine.process(
-                    Objects.requireNonNullElse(HTMLTemplatePath, "src/main/resources/defaultHTMLTemplate.html"), context);
+            if (!HTMLTemplatePath.isEmpty()) {
+                return templateEngine.process(HTMLTemplatePath, context);
+            }
+            return templateEngine.process("classes/defaultHTMLTemplate.html", context);
         } catch (TemplateEngineException e) {
             logger.error("Exception processing template", e);
 
