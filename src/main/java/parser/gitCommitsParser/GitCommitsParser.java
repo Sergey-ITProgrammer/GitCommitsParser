@@ -17,7 +17,6 @@ import java.util.regex.Pattern;
 
 public class GitCommitsParser {
     private static final Logger logger = LoggerFactory.getLogger(GitCommitsParser.class);
-
     private final String gitLogFile;
     private final String regex;
     private final Format format;
@@ -30,9 +29,13 @@ public class GitCommitsParser {
         this.HTMLTemplatePath = HTMLTemplatePath;
     }
 
-    public void parse() throws IOException {
-        List<String> listOfCommits = getStringOfCommitsFromFile();
+    public String parse() throws IOException {
+        List<String> listOfCommits = getListOfCommitsFromFile();
 
+        return getParsedGitLog(listOfCommits);
+    }
+
+    public String getParsedGitLog(List<String> listOfCommits){
         List<Map<String, String>> splitCommits = splitCommitsIntoParts(listOfCommits);
 
         ConverterFactory converter = new ConverterFactory(HTMLTemplatePath);
@@ -41,7 +44,7 @@ public class GitCommitsParser {
 
         logger.info("The converting was completed successfully");
 
-        System.out.println(result);
+        return result;
     }
 
     private List<Map<String, String>> splitCommitsIntoParts(List<String> listOfCommits) {
@@ -88,7 +91,7 @@ public class GitCommitsParser {
         return listOfCommitMap;
     }
 
-    private List<String> getStringOfCommitsFromFile() throws IOException {
+    private List<String> getListOfCommitsFromFile() throws IOException {
         return Files.readAllLines(Paths.get(gitLogFile));
     }
 }

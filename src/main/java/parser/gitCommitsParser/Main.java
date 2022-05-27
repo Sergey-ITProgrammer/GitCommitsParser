@@ -72,7 +72,7 @@ public class Main {
         }
 
         try {
-            new GitCommitsParser(gitLogFile, regex, formatEnum, HTMLTemplatePath).parse();
+            System.out.println(new GitCommitsParser(gitLogFile, regex, formatEnum, HTMLTemplatePath).parse());
         } catch (IOException e) {
             logger.error("The file on the " + gitLogFile + " path was not found", e);
 
