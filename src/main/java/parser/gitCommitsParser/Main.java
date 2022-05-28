@@ -10,10 +10,15 @@ import java.io.IOException;
 public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
     public static void main (String[] args) {
-        Option gitLogFileOption = new Option("l", "gitLogFile", true, "git log file");
-        Option regexOption = new Option("r", "regex", true, "regex");
-        Option formatOption = new Option("f", "format", true, "format");
-        Option HTMLTemplatePathOption = new Option("h", "htmlTemplate", true, "HTML template path");
+        String gitLogFileOptionDesc = "path to git log file";
+        String regexOptionDesc = "regex to parse";
+        String formatOptionDesc = "format to parse";
+        String HTMLTemplatePathOptionDesc = "HTML template path (Thymeleaf)";
+
+        Option gitLogFileOption = new Option("l", "gitLogFile", true, gitLogFileOptionDesc);
+        Option regexOption = new Option("r", "regex", true, regexOptionDesc);
+        Option formatOption = new Option("f", "format", true, formatOptionDesc);
+        Option HTMLTemplatePathOption = new Option("h", "htmlTemplate", true, HTMLTemplatePathOptionDesc);
 
         String gitLogFile = "";
         String regex = gitLogFileOption.getValue("(?<text>.+)");
@@ -27,20 +32,20 @@ public class Main {
         options.addOption(formatOption);
         options.addOption(HTMLTemplatePathOption);
 
-        CommandLineParser parser = new DefaultParser();
+        CommandLineParser commandLineParser = new DefaultParser();
 
         CommandLine commandLine = null;
         try {
-            commandLine = parser.parse(options, args);
+            commandLine = commandLineParser.parse(options, args);
         } catch (ParseException e) {
             logger.error("Cannot parse this args", e);
 
             System.exit(1);
         }
 
-        if (!commandLine.hasOption("l") && !commandLine.hasOption("r")) {
+        if (!commandLine.hasOption("l")) {
             for (Option option : options.getOptions()) {
-                System.out.println(option.getOpt() + " " + option.getLongOpt() + ": " + option.getDescription());
+                System.out.println(option);
             }
 
             System.exit(0);
@@ -72,7 +77,9 @@ public class Main {
         }
 
         try {
-            System.out.println(new GitCommitsParser(gitLogFile, regex, formatEnum, HTMLTemplatePath).parse());
+            GitCommitsParser parser = new GitCommitsParser(gitLogFile, regex, formatEnum, HTMLTemplatePath);
+
+            System.out.println(parser.parse());
         } catch (IOException e) {
             logger.error("The file on the " + gitLogFile + " path was not found", e);
 

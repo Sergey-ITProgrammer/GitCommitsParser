@@ -11,3 +11,5 @@ Java-приложение для парсинга git-лога.
 2) --regex (-r)
 3) --format (-f)
 (json, html или plain. По умолчанию: plain)
+4) --HTMLTemplatePath (-h)
+(путь до HTML шаблона)

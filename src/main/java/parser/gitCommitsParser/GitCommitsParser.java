@@ -35,7 +35,7 @@ public class GitCommitsParser {
         return getParsedGitLog(listOfCommits);
     }
 
-    public String getParsedGitLog(List<String> listOfCommits){
+    public String getParsedGitLog(List<String> listOfCommits) {
         List<Map<String, String>> splitCommits = splitCommitsIntoParts(listOfCommits);
 
         ConverterFactory converter = new ConverterFactory(HTMLTemplatePath);
