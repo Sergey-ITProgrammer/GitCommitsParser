@@ -20,7 +20,7 @@ public class JUnitTest extends Assertions {
 
     @Test
     void testJsonFormat() {
-        GitCommitsParser parser = new GitCommitsParser("", regex, Format.json, "");
+        GitCommitsParser parser = new GitCommitsParser("", regex, Format.JSON, "");
 
         String result = parser.getParsedGitLog(listOfCommits);
 
@@ -31,7 +31,7 @@ public class JUnitTest extends Assertions {
 
     @Test
     void testPlainFormat() {
-        GitCommitsParser parser = new GitCommitsParser("", regex, Format.plain, "");
+        GitCommitsParser parser = new GitCommitsParser("", regex, Format.PLAIN, "");
 
         String result = parser.getParsedGitLog(listOfCommits);
 

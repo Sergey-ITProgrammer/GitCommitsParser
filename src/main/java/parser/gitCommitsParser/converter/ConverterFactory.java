@@ -9,25 +9,20 @@ public class ConverterFactory {
     public ConverterFactory(String HTMLTemplatePath) {
         this.HTMLTemplatePath = HTMLTemplatePath;
     }
+
     public String convert(List<Map<String, String>> splitCommits, Format format) {
         String result = "";
 
-        Converter formatConverter;
         switch (format) {
-            case json:
-                formatConverter = new JSONConverter();
-
-                result = formatConverter.convert(splitCommits);
+            case JSON:
+                result = new JSONConverter().convert(splitCommits);
                 break;
-            case html:
-                formatConverter = new HTMLConverter(HTMLTemplatePath);
-
-                result = formatConverter.convert(splitCommits);
+            case HTML:
+                result = new HTMLConverter(HTMLTemplatePath).convert(splitCommits);
                 break;
-            case plain:
-                formatConverter = new PlainConverter();
-
-                result = formatConverter.convert(splitCommits);
+            case PLAIN:
+                result = new PlainConverter().convert(splitCommits);
+                break;
         }
 
         return result;

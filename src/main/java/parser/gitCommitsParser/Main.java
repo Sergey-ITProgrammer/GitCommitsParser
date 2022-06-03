@@ -9,22 +9,48 @@ import java.io.IOException;
 
 public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
+
+    private static final String GIT_LOG_FILE_OPTION_DESC = "path to git log file";
+    private static final String REGEX_OPTION_DESC = "regex to parse";
+    private static final String FORMAT_OPTION_DESC = "format to parse";
+    private static final String HTML_TEMPLATE_PATH_OPTION_DESC = "HTML template path (Thymeleaf)";
+
+    private static final Option gitLogFileOption = new Option("l", "gitLogFile", true, GIT_LOG_FILE_OPTION_DESC);
+    private static final Option regexOption = new Option("r", "regex", true, REGEX_OPTION_DESC);
+    private static final Option formatOption = new Option("f", "format", true, FORMAT_OPTION_DESC);
+    private static final Option HTMLTemplatePathOption = new Option("h", "htmlTemplate", true, HTML_TEMPLATE_PATH_OPTION_DESC);
+
+    private static String gitLogFile = "";
+    private static String regex = gitLogFileOption.getValue("(?<text>.+)");
+    private static Format format;
+    private static String HTMLTemplatePath = "";
     public static void main (String[] args) {
-        String gitLogFileOptionDesc = "path to git log file";
-        String regexOptionDesc = "regex to parse";
-        String formatOptionDesc = "format to parse";
-        String HTMLTemplatePathOptionDesc = "HTML template path (Thymeleaf)";
+        Options options = getOptions();
 
-        Option gitLogFileOption = new Option("l", "gitLogFile", true, gitLogFileOptionDesc);
-        Option regexOption = new Option("r", "regex", true, regexOptionDesc);
-        Option formatOption = new Option("f", "format", true, formatOptionDesc);
-        Option HTMLTemplatePathOption = new Option("h", "htmlTemplate", true, HTMLTemplatePathOptionDesc);
+        CommandLine commandLine = getCommandLine(options, args);
 
-        String gitLogFile = "";
-        String regex = gitLogFileOption.getValue("(?<text>.+)");
-        String format = "";
-        String HTMLTemplatePath = "";
+        if (!commandLine.hasOption("l")) {
+            for (Option option : options.getOptions()) {
+                System.out.println(option);
+            }
 
+            System.exit(0);
+        }
+
+        getOptionValuesFromCommandLine(commandLine);
+
+        try {
+            GitCommitsParser parser = new GitCommitsParser(gitLogFile, regex, format, HTMLTemplatePath);
+
+            System.out.println(parser.parse());
+        } catch (IOException e) {
+            logger.error("The file on the " + gitLogFile + " path was not found", e);
+
+            System.exit(2);
+        }
+    }
+
+    private static Options getOptions() {
         Options options = new Options();
 
         options.addOption(gitLogFileOption);
@@ -32,6 +58,10 @@ public class Main {
         options.addOption(formatOption);
         options.addOption(HTMLTemplatePathOption);
 
+        return options;
+    }
+
+    private static CommandLine getCommandLine(Options options, String[] args) {
         CommandLineParser commandLineParser = new DefaultParser();
 
         CommandLine commandLine = null;
@@ -43,14 +73,10 @@ public class Main {
             System.exit(1);
         }
 
-        if (!commandLine.hasOption("l")) {
-            for (Option option : options.getOptions()) {
-                System.out.println(option);
-            }
+        return commandLine;
+    }
 
-            System.exit(0);
-        }
-
+    private static void getOptionValuesFromCommandLine(CommandLine commandLine) {
         if (commandLine.hasOption("l")) {
             gitLogFile = commandLine.getOptionValue(gitLogFileOption);
         }
@@ -58,32 +84,21 @@ public class Main {
             regex = commandLine.getOptionValue(regexOption);
         }
         if (commandLine.hasOption("f")) {
-            format = commandLine.getOptionValue(formatOption);
+            String formatFromCommandLine = commandLine.getOptionValue(formatOption);
+
+            switch (formatFromCommandLine) {
+                case "json":
+                    format = Format.JSON;
+                    break;
+                case "html":
+                    format = Format.HTML;
+                    break;
+                default:
+                    format = Format.PLAIN;
+            }
         }
         if (commandLine.hasOption("h")) {
             HTMLTemplatePath = commandLine.getOptionValue(HTMLTemplatePathOption);
-        }
-
-        Format formatEnum;
-        switch (format) {
-            case "json":
-                formatEnum = Format.json;
-                break;
-            case "html":
-                formatEnum = Format.html;
-                break;
-            default:
-                formatEnum = Format.plain;
-        }
-
-        try {
-            GitCommitsParser parser = new GitCommitsParser(gitLogFile, regex, formatEnum, HTMLTemplatePath);
-
-            System.out.println(parser.parse());
-        } catch (IOException e) {
-            logger.error("The file on the " + gitLogFile + " path was not found", e);
-
-            System.exit(2);
         }
     }
 }
